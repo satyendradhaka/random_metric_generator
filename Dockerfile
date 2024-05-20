@@ -10,7 +10,7 @@ COPY . /app
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir prometheus_client
 
-EXPOSE 8000
+EXPOSE 8080
 
 # Run the Python script when the container launches
 CMD ["--number_of_metrics", "100000", "--rate_of_metric_generation", "10000", "--time", "10"]
