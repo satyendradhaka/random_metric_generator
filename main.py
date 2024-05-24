@@ -2,7 +2,7 @@ import argparse
 import sys
 import threading
 import time
-from prometheus_client import start_http_server, Summary
+from prometheus_client import start_http_server, Counter
 
 string_array = []
 
@@ -59,8 +59,8 @@ def publish_metrics(metrics_array, reverse, total_metrics, rate, timeframe):
     if reverse:
         index = len(metrics_array) - 1
         while index > total_metrics / 2:
-            REQUEST_TIME = Summary(metrics_array[index], 'Time spent processing request')
-            REQUEST_TIME.time()
+            REQUEST_TIME = Counter(metrics_array[index], 'Time spent processing request', ['id'])
+            REQUEST_TIME.labels(id=index).inc()
             index -= 1
             generated_metrics += 1
             if generated_metrics == rate // 2:
@@ -69,8 +69,8 @@ def publish_metrics(metrics_array, reverse, total_metrics, rate, timeframe):
     else:
         index = 0
         while index <= total_metrics / 2:
-            REQUEST_TIME = Summary(metrics_array[index], 'Time spent processing request')
-            REQUEST_TIME.time()
+            REQUEST_TIME = Counter(metrics_array[index], 'Time spent processing request', ['id'])
+            REQUEST_TIME.labels(id=index).inc()
             index += 1
             generated_metrics += 1
             if generated_metrics == rate // 2:
@@ -98,8 +98,10 @@ if __name__ == '__main__':
 
     # Generate some metrics
     print("Start publishing metrics")
-    thread_1 = threading.Thread(target=publish_metrics, args=(metric_array, True, number_of_metrics, rate_of_metric_generation, timeframe))
-    thread_2 = threading.Thread(target=publish_metrics, args=(metric_array, False, number_of_metrics, rate_of_metric_generation, timeframe))
+    thread_1 = threading.Thread(target=publish_metrics,
+                                args=(metric_array, True, number_of_metrics, rate_of_metric_generation, timeframe))
+    thread_2 = threading.Thread(target=publish_metrics,
+                                args=(metric_array, False, number_of_metrics, rate_of_metric_generation, timeframe))
     thread_1.start()
     thread_2.start()
 
